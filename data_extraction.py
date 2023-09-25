@@ -21,6 +21,10 @@ class DataExtractor():
         #self.num_stores = None
     #method
     def read_rds_table(self, datacon : DatabaseConnector, table_name : str):
+        '''
+        This method reads the table from RDS and extracts the data
+        of a particular table(legacy users data)
+        '''
         #table_rds = DatabaseConnector()
         list_tables = datacon.list_db_tables()
         #print(datacon.table_list)
@@ -34,6 +38,7 @@ class DataExtractor():
             #print(self.legacy_df.tail())
 
     def retrieve_pdf_data(self, link_pdf):
+        '''This method retrieves the data stored in pdf using tabula-py.'''
         pd.set_option('display.max_columns', None)
         #user_card_df = tabula.read_pdf(link_pdf,pages = "all", stream = True)
         self.combined_df = pd.concat(tb.read_pdf(link_pdf, pages = "all"))
@@ -46,12 +51,19 @@ class DataExtractor():
         return self.combined_df
 
     def list_number_of_stores(self, no_stores_endpoint , store_header : dict):
+        '''
+        This method list the number os stores from API.
+        '''
         response = requests.get(no_stores_endpoint, headers=store_header)
         num_stores = response.json()['number_stores']
         print(num_stores)
         return num_stores
 
     def retrieve_stores_data(self, store_retrieve, store_header:dict, store_numbers):
+        '''
+        This method retreives the store data from API provided 
+        and using the store count derived from above method
+        '''
         all_store_data = []
         for store_number in range(0, store_numbers) :
             #store_url = f"{store_retrieve}{store_number}"
@@ -65,16 +77,20 @@ class DataExtractor():
 
         pd.set_option('display.max_columns', None)
         self.store_df = pd.DataFrame(all_store_data)
+        #print(self.store_df.to_string())
         #print(self.store_df.head())
         return self.store_df
 
     def extract_from_s3(self, address_uri):  
+        '''
+        This method extracts/downloads data from S3 bucket using boto3 library
+        '''
         uri_parts = address_uri.split('/')
         bucket_part = uri_parts[2]
         print('bucket_part', bucket_part)
         uri_id_part = uri_parts[3]
         print('uri_id_part',uri_id_part)
-        local_add = '/Users/chait/OneDrive/Desktop/Aicore_project/Multinational_Retail_Data_Centralisation/AWS_S3_Object/products.csv'
+        local_add = '/Users/chait/OneDrive/Desktop/Aicore_project/multinational_Aicore_project/multinational-retail-data-centralisation/AWS_S3_Object/products.csv'
         s3 = boto3.client('s3')
         s3.download_file(bucket_part,uri_id_part,local_add)
         #s3.close()
@@ -84,9 +100,13 @@ class DataExtractor():
         return products_df
     
     def date_event_ext(self, url):
+        '''
+        This method extracts json file stored in S3 bucket having a link.
+        '''
         response = requests.get(url)
         if response.status_code == 200:
             date_df = pd.read_json(response.text)
+            #print(date_df.to_string())
             print(date_df.head())
             return date_df
         else:

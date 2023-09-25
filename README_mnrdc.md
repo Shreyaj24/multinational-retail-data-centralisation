@@ -77,7 +77,130 @@ This project is to produce a system that stores the data for a multinational com
         - Step4:
             - After cleaning, we upload the table using *upload_to_db* method and table name as *orders_table*.
             ![orders_table](MNRDC_img/Orders_table.JPG)    
+## **Milestone3** 
+- **Task1:** 
+    -   To cast the columns of *orders_table* with correct datatypes.
+        +------------------+--------------------+--------------------+
+        |   orders_table   | current data type  | required data type |
+        +------------------+--------------------+--------------------+
+        | date_uuid        | TEXT               | UUID               |
+        | user_uuid        | TEXT               | UUID               |
+        | card_number      | TEXT               | VARCHAR(30)        |
+        | store_code       | TEXT               | VARCHAR(15)        |
+        | product_code     | TEXT               | VARCHAR(15)        |
+        | product_quantity | BIGINT             | SMALLINT           |
+        +------------------+--------------------+--------------------+
+- **Task3:**
+    -   To cast the columns of *dim_user_table* with correct datatypes.
+        +----------------+--------------------+--------------------+
+        | dim_user_table | current data type  | required data type |
+        +----------------+--------------------+--------------------+
+        | first_name     | TEXT               | VARCHAR(255)       |
+        | last_name      | TEXT               | VARCHAR(255)       |
+        | date_of_birth  | TEXT               | DATE               |
+        | country_code   | TEXT               | VARCHAR(5)         |
+        | user_uuid      | TEXT               | UUID               |
+        | join_date      | TEXT               | DATE               |
+        +----------------+--------------------+--------------------+
+- **Task4:**
+    -   There are two latitude columns in the store details table i.e. *dim_store_details*. Using SQL, merge one of the      columns into the other so we have one latitude column.
 
+    -    Then set the data types for each column as shown below:
+
+        +---------------------+-------------------+------------------------+
+        | store_details_table | current data type |   required data type   |
+        +---------------------+-------------------+------------------------+
+        | longitude           | TEXT              | FLOAT                  |
+        | locality            | TEXT              | VARCHAR(255)           |
+        | store_code          | TEXT              | VARCHAR(15)            |
+        | staff_numbers       | TEXT              | SMALLINT               |
+        | opening_date        | TEXT              | DATE                   |
+        | store_type          | TEXT              | VARCHAR(255) NULLABLE  |
+        | latitude            | TEXT              | FLOAT                  |
+        | country_code        | TEXT              | VARCHAR(5)             |
+        | continent           | TEXT              | VARCHAR(255)           |
+        +---------------------+-------------------+------------------------+
+        There is a row that represents the business's website change the location column values where they're null to N/A.  
+-   **Task4:**
+    -   We need some work on the *dim_products* table before casting the data types correctly.
+
+    -   The product_price column has a £ character which you need to remove using SQL.
+
+    -   The team that handles the deliveries would like a new human-readable column added for the weight so they can quickly make decisions on delivery weights.
+
+    -   Add a new column weight_class which will contain human-readable values based on the weight range of the product. Using *case and when* we implement the change. 
+
+        +--------------------------+-------------------+
+        | weight_class VARCHAR(?)  | weight range(kg)  |
+        +--------------------------+-------------------+
+        | Light                    | < 2               |
+        | Mid_Sized                | >= 2 - < 40       |
+        | Heavy                    | >= 40 - < 140     |
+        | Truck_Required           | => 140            |
+        +----------------------------+-----------------+
+- **Task5:**
+    -   After all the columns are created and cleaned, change the data types of the products table.
+
+    -   You rename the removed column to still_available before changing its data type.
+
+    -   Make the changes to the columns to cast them to the following data types:
+
+        +-----------------+--------------------+--------------------+
+        |  dim_products   | current data type  | required data type |
+        +-----------------+--------------------+--------------------+
+        | product_price   | TEXT               | FLOAT              |
+        | weight          | TEXT               | FLOAT              |
+        | EAN             | TEXT               | VARCHAR(20)        |
+        | product_code    | TEXT               | VARCHAR(15)        |
+        | date_added      | TEXT               | DATE               |
+        | uuid            | TEXT               | UUID               |
+        | still_available | TEXT               | BOOL               |
+        | weight_class    | TEXT               | VARCHAR(20)        |
+        +-----------------+--------------------+--------------------+
+-   **Task6:**
+    -   Now update the date table with the correct types:
+
+        +-----------------+-------------------+--------------------+
+        | dim_date_times  | current data type | required data type |
+        +-----------------+-------------------+--------------------+
+        | month           | TEXT              | VARCHAR(20)        |
+        | year            | TEXT              | VARCHAR(20)        |
+        | day             | TEXT              | VARCHAR(20)        |
+        | time_period     | TEXT              | VARCHAR(20)        |
+        | date_uuid       | TEXT              | UUID               |
+        +-----------------+-------------------+--------------------+
+-   **Task7:**
+    -   Now we need to update the last table for the card details.
+
+    -   Make the associated changes after finding out what the lengths of each variable should be:
+
+        +------------------------+-------------------+--------------------+
+        |    dim_card_details    | current data type | required data type |
+        +------------------------+-------------------+--------------------+
+        | card_number            | TEXT              | VARCHAR(30)        |
+        | expiry_date            | TEXT              | VARCHAR(10)        |
+        | date_payment_confirmed | TEXT              | DATE               |
+        +------------------------+-------------------+--------------------+
+-   **Task8:**
+    -   To create the primary Keys in the dimensions(dim) tables.
+
+    -   Now that the tables have the appropriate data types we can begin adding the primary keys to each of the tables prefixed with dim.
+
+    -   Each table will serve the orders_table which will be the single source of truth for our orders.
+
+    -   Check the column header of the orders_table you will see all but one of the columns exist in one of our tables prefixed with dim.
+
+    -   We need to update the columns in the dim tables with a primary key that matches the same column in the orders_table.
+
+    -   Using SQL, update the respective columns as primary key columns. 
+**Task9:**
+    -   Final step for the star-based-schema and to add the foreign keys to the *orders_table*.
+
+    -   With the primary keys created in the tables prefixed with dim we can now create the foreign keys in the orders_table to reference the primary keys in the other tables.
+
+    -   Use SQL to create those foreign key constraints that reference the primary keys of the other table.
+
+    -   This makes the star-based database schema complete.
 
 
  

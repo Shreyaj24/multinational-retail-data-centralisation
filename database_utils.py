@@ -15,18 +15,27 @@ class DatabaseConnector():
         
     #methods
     def read_db_creds (self):
+        '''
+        This method extracts the credentials from yaml file.
+        '''
         with open('db_creds.yaml', 'r') as yaml_cred_file:
             cred_data = yaml.safe_load(yaml_cred_file)
             #print('cred_data = ', cred_data)
         return cred_data
     
     def init_db_engine(self):
+        '''
+        This method creates the engine by extracting details from the above method.
+        '''
         cred_data = self.read_db_creds()
         db_conn = f"{'postgresql'}://{cred_data['RDS_USER']}:{cred_data['RDS_PASSWORD']}@{cred_data['RDS_HOST']}:{cred_data['RDS_PORT']}/{cred_data['RDS_DATABASE']}"
         self.engine = create_engine(db_conn)
         #return self.engine
     
     def list_db_tables (self):
+        '''
+        This method gets the name of table stored in the RDS. 
+        '''
         self.init_db_engine()
         self.engine.connect()
         inspector = inspect(self.engine)
@@ -38,6 +47,9 @@ class DatabaseConnector():
         # return table 
 
     def upload_to_db(self, dataframe : pd.DataFrame , table_name_up : str) :
+        '''
+        This method uploads the data (pd dataframe) into the postgres SQL DB
+        '''
         DATABASE_TYPE = 'postgresql'
         #DBAPI = 'psycopg2'
         HOST = 'localhost'
