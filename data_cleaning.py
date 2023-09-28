@@ -62,6 +62,7 @@ class DataCleaning():
         store_df = store_df.drop('lat', axis =1)
         print(store_df.loc[store_df['latitude'].isnull()])
         #store_df = store_df.loc[~(store_df['latitude'].isnull())]
+        #store_df = store_df.loc[store_df['address'].replace('N/A', None)]
         print(store_df['continent'].unique())
         print(store_df['country_code'].unique())
         val_cont = ['Europe', 'America', 'eeEurope', 'eeAmerica']

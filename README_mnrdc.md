@@ -201,7 +201,188 @@ This project is to produce a system that stores the data for a multinational com
     -   Use SQL to create those foreign key constraints that reference the primary keys of the other table.
 
     -   This makes the star-based database schema complete.
+## **Milestone4**: To Query the data uploaded into Sales Database 
+- **Task1:** 
+    -   To query and get results to know which countries they currently operate in and which        country now has the most stores. The query as below:
+        ```sql
+        *SELECT country_code AS country,count(store_code) AS total_no_stores*
+        *FROM dim_store_details*
+        *GROUP BY country_code*
+        *ORDER BY total_no_stores DESC;*
+        ```
+    Results are as below:
+    ![query1_res](MNRDC_img/Query1.JPG)
+- **Task2:**
+    -   To get the localities which has the most stores.
+        Query as below:
+        ```sql
+        *SELECT locality, count(store_code) AS total_no_stores*
+        *FROM dim_store_details*
+        *GROUP BY locality*
+        *ORDER BY count(store_code) DESC*
+        *LIMIT 7;*
+        ```
+    Results are as below:
+    ![query2_res](MNRDC_img/Query2.JPG)
+- **Task3:**
+    -   To Query the database to find out which months typically have the most sales.
+        Query as below:
+        ```sql
+        SELECT ROUND(SUM(o.product_quantity * pr.product_price) :: numeric , 2) AS total_sales ,
+        dt.month AS month
+        FROM orders_table as o
+        JOIN dim_date_times AS dt ON
+        o.date_uuid = dt.date_uuid
+        JOIN dim_products AS pr ON
+        o.product_code = pr.product_code
+        JOIN dim_card_details AS cr ON
+        o.card_number = cr.card_number
+        GROUP BY dt.month
+        ORDER BY total_sales DESC
+        LIMIT 6;
+        ```
+        Results are as below:
+        ![query3_res](MNRDC_img/Query3.JPG)
+- **Task4:**
+    -   To know how many sales are happening online vs offline.
+        Calculate how many products were sold and the amount of sales made for online and offline purchases.
+        Query as below:
+        ```sql
+        SELECT COUNT(o.store_code) AS number_of_sales , 
+		SUM(o.product_quantity) AS product_quantity_count,
+		CASE
+			WHEN st.store_type = 'Web Portal' THEN 'Web'
+			WHEN st.store_type IN ('Mall Kiosk', 'Super Store', 'Local', 'Outlet') 
+			THEN 'Offline'
+			ELSE st.store_type
+		END AS "location"
+        FROM dim_store_details AS st
+        JOIN orders_table AS o ON
+        st.store_code = o.store_code
+        GROUP BY "location"
+        ORDER BY number_of_sales;
+        ```
+        Results are as below:
+        ![query4_res](MNRDC_img/Query4.JPG)
+-   **Task5:**
+    -   To know which of the different store types is generated the most revenue so they know where to  focus.Find out the total and percentage of sales coming from each of the different store types.
+        Query as below:
+        ```sql
+        SELECT st.store_type, 
+        ROUND(SUM(o.product_quantity * pr.product_price):: numeric, 2) AS total_sales,
+        ROUND(((ROUND(SUM(o.product_quantity * pr.product_price):: numeric, 2) / 
+        (SELECT	(ROUND(SUM(o.product_quantity * pr.product_price) :: numeric, 2)) AS sum_total_sales
+        FROM orders_table AS o
+        JOIN dim_products AS pr ON
+        o.product_code = pr.product_code)) *100),2) AS 'percentage_total(%)'
+            FROM orders_table AS o
+        JOIN dim_store_details AS st ON 
+        o.store_code = st.store_code
+        JOIN dim_products AS pr ON
+        o.product_code = pr.product_code
+        GROUP BY st.store_type
+        ORDER BY total_sales DESC
 
+        --OR
 
+        WITH T AS (
+        SELECT st.store_type, 
+        SUM(o.product_quantity * pr.product_price):: numeric AS total_sales
+        FROM orders_table AS o
+        JOIN dim_store_details AS st ON 
+        o.store_code = st.store_code
+        JOIN dim_products AS pr ON
+        o.product_code = pr.product_code
+        GROUP BY st.store_type
+        ORDER BY total_sales DESC )
+        SELECT T.store_type,
+        ROUND(T.total_sales,2),
+        ROUND(((T.total_sales/(SELECT SUM(T1.total_sales) FROM T T1)) * 100),2) 
+        from T 
+        ```
+        Results are as below:
+        ![query5_res](MNRDC_img/Query5.JPG)
+-   **Task6:**
+    -   To find which months in which years have had the most sales historically.
+        Query as below:
+        ```sql
+        SELECT ROUND(SUM(o.product_quantity * pr.product_price) :: numeric , 2) AS total_sales ,
+        dt.year AS year, dt.month AS month
+        FROM orders_table as o
+        JOIN dim_date_times AS dt ON
+        o.date_uuid = dt.date_uuid
+        JOIN dim_products AS pr ON
+        o.product_code = pr.product_code
+        JOIN dim_card_details AS cr ON
+        o.card_number = cr.card_number
+        GROUP BY dt.month, dt.year
+        ORDER BY total_sales DESC
+        LIMIT 10;
+        ```
+        Results are as below:
+        ![query6_res](MNRDC_img/Query6.JPG)
+-   **Task7:**
+    -   To determine the staff numbers in each of the countries the company sells in.
+        Query as below:
+        ```sql
+        SELECT SUM(staff_numbers) AS total_staff_numbers, country_code
+        FROM dim_store_details
+        GROUP BY country_code
+        ORDER BY total_staff_numbers DESC;
+        ```
+        Results are as below:
+        ![query7_res](MNRDC_img/Query7.JPG)
+-   **Task8:**
+    -    To determine which type of store is generating the most sales in Germany.
+        Query as below:
+        ```sql
+        SELECT 
+        ROUND(SUM(o.product_quantity * pr.product_price):: numeric,2) AS total_sales,
+            st.store_type, st.country_code
+        FROM orders_table AS o
+        JOIN dim_store_details AS st ON 
+        o.store_code = st.store_code
+        JOIN dim_products AS pr ON
+        o.product_code = pr.product_code
+            WHERE st.country_code = 'DE'
+        GROUP BY st.store_type, st.country_code
+        ORDER BY total_sales ASC;
+        ```
+        Results are as below:
+        ![query8_res](MNRDC_img/Query8.JPG)
+-   **Task 9:**
+    -   To determine the average time taken between each sale grouped by year.
+        Query as below:
+        ```sql
+        WITH SalesTime AS (
+            SELECT DISTINCT "year" AS order_year,
+            "month" AS order_month,
+            "day" AS order_day,
+            "timestamp" AS order_time,
+            TO_TIMESTAMP(CONCAT("year",'-',"month",'-',"day",' ',timestamp), 
+                        'YYYY-MM-DD HH24:MI:SS') AS order_date_time
+            FROM dim_date_times 
+            order by order_date_time),
+            TimeGapNext AS (SELECT order_year, order_date_time,
+                                LEAD(order_date_time, 1, 'infinity')
+                                OVER(ORDER BY order_date_time) AS next_time_taken 
+                            FROM SalesTime),
+            ExtractTime AS (SELECT tg.order_year AS order_extract_year ,
+                        AVG(tg.next_time_taken - tg.order_date_time) AS time_taken
+                        FROM TimeGapNext AS tg
+                        WHERE tg.next_time_taken != 'infinity'	
+                        GROUP BY tg.order_year
+                        ORDER BY time_taken DESC)	
+        SELECT 
+        order_extract_year AS "year",
+        CONCAT('"hours": ',EXTRACT(HOUR FROM time_taken),
+	  	        ', "minutes": ',EXTRACT(MINUTE FROM time_taken),
+	  	        ', "seconds": ',ROUND(EXTRACT (SECOND FROM time_taken),0),
+	  	        ', "milliseconds": ', ROUND(EXTRACT (MILLISECONDS FROM time_taken),0)) as actual_time_taken
+        FROM ExtractTIME
+        LIMIT 5;
+        ```
+        Results are as below:
+        ![query9_res](MNRDC_img/Query9.JPG)
  
 
